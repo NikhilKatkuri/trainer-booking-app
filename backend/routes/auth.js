@@ -10,10 +10,13 @@ const TrainerProfile = require("../models/TrainerProfile");
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role, profile } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email & password required" });
+    console.log(req.body)
+    if (!email || !password)
+      return res.status(400).json({ message: "Email & password required" });
 
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Email already used" });
+    if (existing)
+      return res.status(400).json({ message: "Email already used" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, passwordHash, role });
@@ -22,7 +25,11 @@ router.post("/register", async (req, res) => {
       await TrainerProfile.create({ userId: user._id, ...profile });
     }
 
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     res.json({ token, role: user.role, userId: user._id });
   } catch (err) {
     console.error(err);
@@ -40,12 +47,53 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     res.json({ token, role: user.role, userId: user._id });
-    console.log("tokenn",token)
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
+ 
+
+router.get("/verifyToken", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
+
+    if (!token) {
+      return res.status(401).json({ message: "Access token required" });
+    }
+
+    // Verify the JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Get user from database to ensure they still exist
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      isAllowed: true,
+      userId: user._id,
+      role: user.role,
+      name: user.name,
+    });
+  } catch (err) {
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+    if (err.name === 'TokenExpiredError') {
+      return res.status(403).json({ message: "Token expired" });
+    }
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+ 
 
 module.exports = router;
