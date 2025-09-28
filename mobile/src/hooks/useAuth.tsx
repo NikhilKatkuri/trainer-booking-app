@@ -9,6 +9,16 @@ import { LoginData, SignUpData } from "../types/auth.type";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+interface UserDataType {
+  token: string;
+  name: string;
+  email: string;
+  password: string;
+  userId: string;
+  role: string;
+  maxAge: number;
+}
+
 interface AuthContextType {
   isAuthenticated: undefined | boolean;
   setIsAuthenticated: (val: boolean | undefined) => void;
@@ -20,6 +30,8 @@ interface AuthContextType {
   setSignUPData: React.Dispatch<React.SetStateAction<SignUpData>>;
   handleSignUp: () => Promise<void>;
   handleLogin: () => Promise<void>;
+  userData: UserDataType | null; 
+  handleLogout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: "",
     confirmPassword: "",
   });
-
+  const [userData, setUserData] = useState<UserDataType | null>(null);
   useEffect(() => {
     async function update() {
       const userData = await AsyncStorage.getItem(StorageKey);
@@ -53,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       if (userData) {
         try {
+          setUserData(JSON.parse(userData));
           const now = new Date().getTime();
           const exp = JSON.parse(userData).maxAge;
           if (now >= exp) {
@@ -125,6 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await AsyncStorage.setItem(StorageKey, JSON.stringify(result));
         alert("User registered successfully");
+        setUserData(result);
         setIsAuthenticated(true);
         setLoginData({ email: "", password: "" });
         setSignUPData({
@@ -187,6 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.log(error);
         }
         setIsAuthenticated(true);
+        setUserData(result);
         setLoginData({ email: "", password: "" });
         setSignUPData({
           name: "",
@@ -204,6 +219,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setWaiter(false);
     }
   };
+
+  const handleLogout=async ()=>{
+    try {
+      await AsyncStorage.removeItem(StorageKey);
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -217,6 +242,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         waiter,
         setWaiter,
         handleLogin,
+        userData,
+        handleLogout
       }}
     >
       {children}

@@ -32,8 +32,11 @@ router.post("/register", async (req, res) => {
     );
     res.json({
       token,
-      role: user.role,
+      name: user.name,
+      email: user.email,
+      password: user.passwordHash,
       userId: user._id,
+      role: user.role,
       maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
     });
   } catch (err) {
@@ -57,11 +60,14 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-    res.json({
+    res.json({ 
       token,
-      role: user.role,
+      name: user.name,
+      email: user.email,
+      password: user.passwordHash,
       userId: user._id,
-      maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000, 
+      role: user.role,
+      maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -88,9 +94,12 @@ router.get("/verifyToken", async (req, res) => {
 
     res.json({
       isAllowed: true,
+      token,
+      name: user.name,
+      email: user.email,
+      password: user.passwordHash,
       userId: user._id,
       role: user.role,
-      name: user.name,
       maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
     });
   } catch (err) {
