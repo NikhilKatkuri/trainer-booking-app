@@ -16,6 +16,7 @@ import Button from "../../components/Button";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../hooks/useAuth";
 import Loader from "../Loader";
+import SvgBack from "../../components/vectors/Back";
 
 const Signup = () => {
   const navigation = useNavigation();
@@ -44,7 +45,7 @@ const Signup = () => {
                 style={{ padding: 16, marginTop: 16 }}
                 onPress={() => navigation.goBack()}
               >
-                <Text style={{ color: Colors[0].text }}>Back</Text>
+                 <SvgBack/>
               </TouchableOpacity>
             </View>
             <View

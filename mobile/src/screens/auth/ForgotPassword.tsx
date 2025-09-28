@@ -10,6 +10,7 @@ import Colors from "../../styles/Color";
 import InputText from "../../components/InputText";
 import Button from "../../components/Button";
 import { useNavigation } from "@react-navigation/native";
+import SvgBack from "../../components/vectors/Back";
 
 const ForgotPassword = () => {
   const navigation = useNavigation();
@@ -23,7 +24,7 @@ const ForgotPassword = () => {
             style={{ padding: 16, marginTop: 16 }}
             onPress={() => navigation.goBack()}
           >
-            <Text style={{ color: Colors[0].text }}>Back</Text>
+            <SvgBack />
           </TouchableOpacity>
         </View>
         <View
@@ -52,13 +53,22 @@ const ForgotPassword = () => {
             </Text>
           </View>
           <View style={{ width: "100%", marginVertical: 36, gap: 24 }}>
-            <InputText value={email} onChangeText={(text)=>{
-              setemail(text);
-            }} variant="Text" placeholder="Email" />
+            <InputText
+              value={email}
+              onChangeText={(text) => {
+                setemail(text);
+              }}
+              variant="Text"
+              placeholder="Email"
+            />
             <View style={{ marginTop: 12 }}>
-              <Button onPress={() => {
-                navigation.navigate("display", { email: email });
-              }} title="Find" variant="fill" />
+              <Button
+                onPress={() => {
+                  navigation.navigate("display", { email: email });
+                }}
+                title="Find"
+                variant="fill"
+              />
             </View>
           </View>
         </View>
