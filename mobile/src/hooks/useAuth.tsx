@@ -1,5 +1,3 @@
-"use client";
-
 import {
   createContext,
   useContext,
@@ -27,6 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const backendUrl: string = `${process.env.EXPO_PUBLIC_BACKEND_BASEURL}/api`;
+const StorageKey = "__Data__User";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(
@@ -44,44 +43,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: "",
     confirmPassword: "",
   });
-  
+
   useEffect(() => {
     async function update() {
-      const token = await AsyncStorage.getItem("token");
-      if (token === null || token === undefined) {
+      const userData = await AsyncStorage.getItem(StorageKey);
+      if (userData === null || userData === undefined) {
         setIsAuthenticated(false);
+        return;
       }
-      if (token) {
+      if (userData) {
         try {
-          const url = `${backendUrl}/auth/verifyToken`;
-          const response = await fetch(url, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (!response.ok) {
+          const now = new Date().getTime();
+          const exp = JSON.parse(userData).maxAge;
+          if (now >= exp) {
             setIsAuthenticated(false);
-            AsyncStorage.removeItem("token");
-            return;
+            AsyncStorage.removeItem(StorageKey);
+          } else {
+            setIsAuthenticated(true);
           }
-          const result = await response.json();
-          AsyncStorage.setItem("token", result.token);
-          setIsAuthenticated(true);
         } catch (error) {
           console.log(error);
           setIsAuthenticated(false);
         }
       }
     }
-    (async () => {
-      await update();
-    })();
-  }, [isAuthenticated]);
+    update();
+  }, []);
 
   const handleSignUp = async () => {
     setWaiter(true);
-    console.log(SignUPData);
     try {
       if (
         !SignUPData.email ||
@@ -90,26 +80,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         !SignUPData.confirmPassword
       ) {
         alert("Please fill all the fields");
+        setWaiter(false);
         return;
       }
       if (SignUPData.password !== SignUPData.confirmPassword) {
         alert("Passwords do not match");
+        setWaiter(false);
         return;
       }
       if (SignUPData.password.length < 6) {
         alert("Password must be at least 6 characters");
+        setWaiter(false);
         return;
       }
 
       if (
-        !SignUPData.email.includes("@") &&
+        !SignUPData.email.includes("@") ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(SignUPData.email)
       ) {
         alert("Please enter a valid email");
+        setWaiter(false);
         return;
       }
       const url = `${backendUrl}/auth/register`;
-      console.log(url);
       const data = {
         name: SignUPData.name,
         email: SignUPData.email,
@@ -123,12 +116,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify(data),
       });
       const result = await response.json();
-      AsyncStorage.setItem("token", result.token);
-      alert("User registered successfully");
-      setIsAuthenticated(true);
-      setLoginData({ email: "", password: "" });
-      setSignUPData({ name: "", email: "", password: "", confirmPassword: "" });
+      if (!response.ok) {
+        setIsAuthenticated(false);
+        alert(result.message);
+        setWaiter(false);
+        return;
+      }
+      try {
+        await AsyncStorage.setItem(StorageKey, JSON.stringify(result));
+        alert("User registered successfully");
+        setIsAuthenticated(true);
+        setLoginData({ email: "", password: "" });
+        setSignUPData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+      } catch (error) {
+        setWaiter(false);
+        console.log(error);
+      }
     } catch (error) {
+      setWaiter(false);
       console.log(error);
     } finally {
       setWaiter(false);
@@ -140,17 +150,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (!loginData.email || !loginData.password) {
         alert("Please fill all the fields");
+        setWaiter(false);
         return;
       }
       if (
-        !loginData.email.includes("@") &&
+        !loginData.email.includes("@") ||
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginData.email)
       ) {
         alert("Please enter a valid email");
+        setWaiter(false);
         return;
       }
       if (loginData.password.length < 6) {
         alert("Password must be at least 6 characters");
+        setWaiter(false);
         return;
       }
       const url = `${backendUrl}/auth/login`;
@@ -167,8 +180,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       const result = await response.json();
       if (response.ok) {
-        AsyncStorage.setItem("token", result.token);
-        alert("Login successful");
+        try {
+          AsyncStorage.setItem(StorageKey, JSON.stringify(result));
+          alert("Login successful");
+        } catch (error) {
+          console.log(error);
+        }
         setIsAuthenticated(true);
         setLoginData({ email: "", password: "" });
         setSignUPData({
@@ -178,6 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           confirmPassword: "",
         });
       } else {
+        setWaiter(false);
         alert(result.message);
       }
     } catch (error) {

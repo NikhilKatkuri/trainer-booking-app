@@ -10,7 +10,7 @@ const TrainerProfile = require("../models/TrainerProfile");
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role, profile } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     if (!email || !password)
       return res.status(400).json({ message: "Email & password required" });
 
@@ -30,7 +30,12 @@ router.post("/register", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-    res.json({ token, role: user.role, userId: user._id });
+    res.json({
+      token,
+      role: user.role,
+      userId: user._id,
+      maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -52,17 +57,21 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-    res.json({ token, role: user.role, userId: user._id });
+    res.json({
+      token,
+      role: user.role,
+      userId: user._id,
+      maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000, 
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
- 
 
 router.get("/verifyToken", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Extract token from "Bearer <token>"
+    const token = authHeader && authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
 
     if (!token) {
       return res.status(401).json({ message: "Access token required" });
@@ -70,7 +79,7 @@ router.get("/verifyToken", async (req, res) => {
 
     // Verify the JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Get user from database to ensure they still exist
     const user = await User.findById(decoded.userId);
     if (!user) {
@@ -82,18 +91,18 @@ router.get("/verifyToken", async (req, res) => {
       userId: user._id,
       role: user.role,
       name: user.name,
+      maxAge: new Date().getTime() + 7 * 24 * 60 * 60 * 1000,
     });
   } catch (err) {
-    if (err.name === 'JsonWebTokenError') {
+    if (err.name === "JsonWebTokenError") {
       return res.status(403).json({ message: "Invalid token" });
     }
-    if (err.name === 'TokenExpiredError') {
+    if (err.name === "TokenExpiredError") {
       return res.status(403).json({ message: "Token expired" });
     }
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
- 
 
 module.exports = router;
