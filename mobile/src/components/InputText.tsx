@@ -9,6 +9,8 @@ import {
 import React, { useState } from "react";
 import { TextInput } from "react-native-gesture-handler";
 import Colors from "../styles/Color";
+import SvgEyeClose from "./vectors/EyeClose";
+import SvgEyeOpen from "./vectors/EyeOpen";
 
 interface Props extends TextInputProps {
   variant: "Text" | "Password";
@@ -38,7 +40,7 @@ const InputText = ({ ...props }: Props) => {
               setShowPassword((prev) => !prev);
             }}
           >
-            <Text>{showPassword ? "hide" : "show"}</Text>
+            <Text>{showPassword ? <SvgEyeClose /> : <SvgEyeOpen />}</Text>
           </TouchableOpacity>
         </View>
       )}
