@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
           const result = await response.json();
-          console.log(result);
+          AsyncStorage.setItem("token", result.token);
           setIsAuthenticated(true);
         } catch (error) {
           console.log(error);

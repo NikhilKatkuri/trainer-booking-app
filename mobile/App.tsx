@@ -54,7 +54,7 @@ const RootLayout = () => {
         {isAuthenticated ? (
           <>
           <Stack.Screen
-            name="Home"
+            name="Homelayout"
             options={{ headerShown: false }}
             component={_HomeLayout}
           /></>
