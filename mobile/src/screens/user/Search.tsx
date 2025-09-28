@@ -1,17 +1,17 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StatusBar, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import ScreenWrapper from "../../components/reusable/ScreenWrapper";
 
-const Home = () => {
+const Search = () => {
   return (
     <ScreenWrapper>
       <View>
-        <Text>Home Screen</Text>
+        <Text>Search</Text>
       </View>
     </ScreenWrapper>
   );
 };
 
-export default Home;
+export default Search;
 
 const styles = StyleSheet.create({});
