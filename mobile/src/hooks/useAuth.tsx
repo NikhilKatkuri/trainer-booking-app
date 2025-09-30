@@ -36,7 +36,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const backendUrl: string = `${process.env.EXPO_PUBLIC_BACKEND_BASEURL}/api`;
+const backendUrl: string = `https://trainer-booking-app.onrender.com/api`;
 const StorageKey = "__Data__User";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
