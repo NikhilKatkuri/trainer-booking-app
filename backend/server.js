@@ -24,14 +24,14 @@ mongoose
   .catch((err) => console.error(err));
 
 app.listen(PORT, HOST, () => {
-  const ip = require("./tools/ip");
+  // const ip = require("./tools/ip");
   console.log("Server running on");
-  console.log(`http://localhost:${PORT}`);
-  ip.getIpAddress()
-    .then((ip) => {
-      console.log(`http://${ip}:${PORT}`);
-    })
-    .catch((err) => {
-      console.error("Could not retrieve IP address:", err);
-    });
+  // console.log(`http://localhost:${PORT}`);
+  // ip.getIpAddress()
+  //   .then((ip) => {
+  //     console.log(`http://${ip}:${PORT}`);
+  //   })
+  //   .catch((err) => {
+  //     console.error("Could not retrieve IP address:", err);
+  //   });
 });
