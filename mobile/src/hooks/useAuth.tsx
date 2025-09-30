@@ -30,7 +30,7 @@ interface AuthContextType {
   setSignUPData: React.Dispatch<React.SetStateAction<SignUpData>>;
   handleSignUp: () => Promise<void>;
   handleLogin: () => Promise<void>;
-  userData: UserDataType | null; 
+  userData: UserDataType | null;
   handleLogout: () => void;
 }
 
@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleLogout=async ()=>{
+  const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem(StorageKey);
       setIsAuthenticated(false);
